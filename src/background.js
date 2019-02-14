@@ -1,15 +1,19 @@
 'use strict'
 
-import { app, protocol, BrowserWindow } from 'electron'
+import { app, protocol, BrowserWindow, remote, ipcMain } from 'electron'
 import {
   createProtocol,
   installVueDevtools
 } from 'vue-cli-plugin-electron-builder/lib'
+import DataStore from 'nedb'
+import path from 'path'
+import { insert, find, findOne, update, remove, count } from "./lib/db"
+
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let win
+let win, db
 
 // Standard scheme must be registered before the app is ready
 protocol.registerStandardSchemes(['app'], { secure: true })
@@ -20,12 +24,32 @@ function createWindow () {
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
+    db = new DataStore({ filename: './data.db' })
     if (!process.env.IS_TEST) win.webContents.openDevTools()
   } else {
+    // db = new DataStore({
+    //   filename: path.join(remote.app.getPath('userData'), '/data.db')
+    // })
+    db = new DataStore({ filename: './data.db' })
     createProtocol('app')
     // Load the index.html when not in development
     win.loadURL('app://./index.html')
+    win.webContents.openDevTools()
   }
+
+  // 加载数据库
+  db.loadDatabase(function (err) {
+    if (err) {
+      win = null
+    } else {
+      ipcMain.on('insert', (event, query) => insert(db, event, query))
+      ipcMain.on('find', (event, query, options) => find(db, event, query, options))
+      ipcMain.on('findOne', (event, query) => findOne(db, event, query))
+      ipcMain.on('update', (event, query) => update(db, event, query))
+      ipcMain.on('remove', (event, query) => remove(db, event, query))
+      ipcMain.on('count', (event, query) => count(db, event, query))
+    }
+  })
 
   win.on('closed', () => {
     win = null

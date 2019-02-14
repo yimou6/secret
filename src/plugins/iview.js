@@ -1,8 +1,14 @@
 import Vue from 'vue'
-import { Button, Spin, Icon } from 'iview'
+import 'iview/dist/styles/iview.css'
+import { Button, Spin, Icon, Form, FormItem, Input, Message, Drawer } from 'iview'
 
 Vue.component('Button', Button)
 Vue.component('Spin', Spin)
 Vue.component('Icon', Icon)
+Vue.component('Form', Form)
+Vue.component('FormItem', FormItem)
+Vue.component('Input', Input)
+Vue.component('Drawer', Drawer)
 
-import 'iview/dist/styles/iview.css'
+Vue.prototype.$Message = Message
+
