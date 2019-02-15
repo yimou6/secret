@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <div class="home scrollbar" :style="{ height: `${homeHeight}px` }">
     <Spin size="large" fix v-if="spinShow">
       <Icon type="ios-loading" size="18" class="spin-icon-load"></Icon>
       <div>Loading</div>
@@ -8,12 +8,15 @@
       <div class="home-nav-man">
         <img src="../../assets/man.png" alt="man">
       </div>
-      <div class="home-nav-insert ripple-go" @click="handleInsert">
-        <span>新增</span>
-      </div>
     </div>
     <div class="home-list">
-      <div class="item" v-for="(item, index) of password" :key="index">
+      <div class="item-insert ripple-go" @click="handleInsert">
+        <img src="../../assets/plus.png" alt="plus">
+      </div>
+      <div class="item ripple-go"
+           v-for="(item, index) of password"
+           @click="settingPwd(item)"
+           :key="index">
         <div class="item-icon">
           <span v-if="item.data.icon === 'default'" class="icon-item">
             <img src="../../assets/password.png" alt="password">
@@ -27,11 +30,10 @@
           <div>{{new Date(item.time).toLocaleString()}}</div>
         </div>
       </div>
-      <div class="list-zero" v-if="password.length === 0">暂无数据</div>
     </div>
 
     <!-- 新增 -->
-    <Drawer v-model="drawerShow" :closable="false" title="新增">
+    <Drawer v-model="drawerShow" :closable="false" :title="title1">
       <Form :model="newData" :label-width="60" ref="insertForm" :rules="newRules">
         <FormItem label="图标" prop="icon">
           <span @click="handleIcon" v-if="newData.icon === ''">选择</span>
@@ -83,7 +85,61 @@
     </Drawer>
 
     <!--  查看/删除/修改  -->
-    <Drawer v-model="drawerShowView" :closable="false" title="详细信息"></Drawer>
+    <Drawer v-model="drawerShowView"
+            :closable="false"
+            width="280"
+            title="预览"
+            placement="left">
+      <Form :model="newData" :label-width="70">
+        <FormItem label="图标" prop="icon">
+          <span class="icon-item" v-if="newData.icon !== 'default'">
+            <i :class="`${newData.icon} icomoon`"></i>
+          </span>
+          <span v-else class="icon-item">
+            <img src="../../assets/password.png" alt="password">
+          </span>
+        </FormItem>
+        <FormItem label="网站名称">
+          <span>{{ newData.name }}</span>
+        </FormItem>
+        <FormItem label="用户名">
+          <span>{{ newData.username }}</span>
+        </FormItem>
+        <FormItem label="密码">
+          <span>{{ newData.password }}</span>
+        </FormItem>
+        <FormItem label="绑定手机">
+          <span>{{ newData.phone }}</span>
+        </FormItem>
+        <FormItem label="绑定邮箱">
+          <span>{{ newData.email }}</span>
+        </FormItem>
+        <FormItem label="其他信息">
+          <span>{{ newData.other }}</span>
+        </FormItem>
+      </Form>
+      <div class="drawer-footer">
+        <div class="ripple set-pwd" @click="editPwd">
+          <img src="../../assets/pwd_edit.png" alt="pwd_edit">
+        </div>
+        <div class="ripple set-pwd" @click="delPwd">
+          <img src="../../assets/pwd_del.png" alt="pwd_del">
+        </div>
+      </div>
+    </Drawer>
+
+    <!-- 删除提示 -->
+    <Modal v-model="delNotice" :mask-closable="false">
+      <p slot="header" class="modal-header">
+        <img src="../../assets/pwd_del.png" alt="pwd_del">
+        <span>删除提示</span>
+      </p>
+      <p style="text-align: center">此操作将永久删除当前项。</p>
+      <div slot="footer" class="modal-footer">
+        <div class="ripple" style="background: linear-gradient(-59deg, #DC5527, #1066A8);" @click="delNotice = false">不删除了</div>
+        <div class="ripple" style="background: linear-gradient(-86deg, #5DA80F, #169E8F);" @click="sourDelPwd">拖出去删了</div>
+      </div>
+    </Modal>
   </div>
 </template>
 
@@ -95,11 +151,13 @@
     name: "home",
     data() {
       return {
+        homeHeight: 300,
         spinShow: true,
         password: [],
         drawerShow: false,
         drawerShowIcon: false,
         drawerShowView: false,
+        delNotice: false,
         icon: ICON,
         newData: {
           icon: '', // 图标
@@ -117,7 +175,9 @@
           name: [{ required: true, message: '请填写网站名称', trigger: 'blur' }],
           username: [{ required: true, message: '请填写用户名', trigger: 'blur' }],
           password: [{ required: true, message: '请填写密码', trigger: 'blur' }]
-        }
+        },
+        title1: '新增',
+        id: ''
       }
     },
     created() {
@@ -129,10 +189,17 @@
           this.$router.push({ name: 'init' })
         }
       })
+      this.homeHeight = window.innerHeight - 40
+      let _this = this
+      window.onresize = function () {
+        _this.homeHeight = window.innerHeight - 40
+      }
     },
     methods: {
       handleInsert() {
+        this.title1 = '新增'
         this.drawerShow = true
+        this.$refs.insertForm.resetFields()
       },
       handleIcon() {
         this.drawerShowIcon = true
@@ -150,18 +217,34 @@
       submitInsert() {
         this.$refs.insertForm.validate(valid => {
           if (valid) {
-            let res = electron.ipcRenderer.sendSync('insert', {
-              conc: DBCONFIG.password,
-              data: encrypt(JSON.stringify(this.newData)),
-              time: new Date().getTime()
-            })
+            let res
+            if (this.title1 === '新增') {
+              res = electron.ipcRenderer.sendSync('insert', {
+                conc: DBCONFIG.password,
+                data: encrypt(JSON.stringify(this.newData)),
+                time: new Date().getTime()
+              })
+            } else {
+               res = electron.ipcRenderer.sendSync('update', {
+                _id: this.id
+              }, {
+                $set: {
+                  data: encrypt(JSON.stringify(this.newData)),
+                  time: new Date().getTime()
+                }
+              }, {
+                 multi: true
+               })
+            }
             if (!res.err) {
-              this.$Message.success('添加成功!')
+              this.$Message.success('操作成功!')
               this.drawerShow = false
               this.getList()
             } else {
-              this.$Message.error('添加失败')
+              this.$Message.error('操作失败')
             }
+            this.id = ''
+            this.$refs.insertForm.resetFields()
           }
         })
       },
@@ -171,7 +254,7 @@
         let list = electron.ipcRenderer.sendSync('find', { conc: DBCONFIG.password }, {
           sort: { time: -1 },
           skip: 0,
-          limit: 10
+          limit: 50
         })
         this.spinShow = false
         if (!list.err) {
@@ -179,19 +262,60 @@
           this.password.map(item => {
             item['data'] = JSON.parse(decrypt(item.data))
           })
-          console.log(this.password)
         }
+      },
+      // 查看/编辑
+      settingPwd(val) {
+        this.newData = val.data
+        this.id = val._id
+        this.drawerShowView = true
+      },
+      // 编辑
+      editPwd() {
+        this.drawerShowView = false
+        this.drawerShow = true
+        this.title1 = '编辑'
+      },
+      // 删除
+      delPwd() {
+        this.delNotice = true
+      },
+      // 确认删除
+      sourDelPwd() {
+        let res = electron.ipcRenderer.sendSync('remove', {
+          _id: this.id
+        }, {})
+        if (!res.err) {
+          this.$Message.success('操作成功!')
+          this.delNotice = false
+          this.drawerShowView = false
+          this.getList()
+        } else {
+          this.$Message.error('操作失败')
+        }
+        this.id = ''
       }
     }
   }
 </script>
 
 <style scoped lang="less">
+.home {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
 .home-nav {
   height: 60px;
   display: flex;
   flex-direction: row-reverse;
   align-items: center;
+  position: fixed;
+  right: 0;
+  background-color: white;
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+  top: 52px;
+  box-shadow: 1px 0 4px rgba(0, 0, 0, 0.14);
   &-man {
     width: 50px;
     height: 50px;
@@ -249,21 +373,38 @@
   left: 0;
   border-top: 1px solid #e8e8e8;
   padding: 10px 16px;
-  text-align: right;
+  text-align: center;
   background: #fff;
+  .set-pwd {
+    display: inline-block;
+  }
 }
 .home-list {
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
   padding: 8px;
+  .item-insert {
+    cursor: pointer;
+    border-radius: 12px;
+    box-shadow: 1px 0 8px rgba(0, 0, 0, 0.14);
+    display: flex;
+    margin: 4px;
+    padding: 0 70px;
+    justify-content: center;
+    align-items: center;
+    img {
+      width: 48px;
+      height: 48px;
+    }
+  }
   .item {
     background: linear-gradient(55deg, #E1A960, #7DCFBB);
     color: white;
     padding: 8px;
-    border-radius: 10px;
+    border-radius: 12px;
     box-shadow: 1px 0 8px rgba(0, 0, 0, 0.14);
-    margin: 2px;
+    margin: 4px;
     cursor: pointer;
     display: flex;
     flex-direction: row;
@@ -277,6 +418,31 @@
       font-weight: lighter;
       font-size: 12px;
     }
+  }
+}
+.modal-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  height: 30px;
+  img {
+    width: 30px;
+    height: 30px;
+  }
+}
+.modal-footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  div {
+    cursor: pointer;
+    border-radius: 15px;
+    margin: 0 6px;
+    padding: 8px 22px;
+    color: white;
+    box-shadow: 1px 0 8px rgba(0, 0, 0, 0.14);
   }
 }
 </style>

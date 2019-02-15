@@ -132,15 +132,15 @@ html, body, #app {
   right: -10px;
   bottom: -10px;
   pointer-events: none;
-  background: #7DCFBB no-repeat 50%;
+  background: #4dcfb5 no-repeat 50%;
   opacity: 0;
-  -webkit-border-radius: 22px;
-  -moz-border-radius: 22px;
-  border-radius: 22px;
-  transition: all .3s;
+  -webkit-border-radius: 12px;
+  -moz-border-radius: 12px;
+  border-radius: 12px;
+  transition: all .5s;
 }
 .ripple:active:after, .ripple-go:active:after {
-  opacity: .3;
+  opacity: .5;
   top: 0;
   left: 0;
   right: 0;
@@ -165,5 +165,21 @@ html, body, #app {
 .btn-white {
   color: #777;
   border: 1px solid #adadad;
+}
+
+.scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  background-color: #648fb0;
+}
+.scrollbar::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(145, 145, 145, 0.3);
+  border-radius: 2px;
+  background-color: #F5F5F5;
+}
+.scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 2px;
+  -webkit-box-shadow: inset 0 0 6px rgba(194, 191, 191, 0.8);
+  background-color: #bfc0c0;
 }
 </style>

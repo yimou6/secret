@@ -1,5 +1,5 @@
 <template>
-  <div class="init">
+  <div class="init" :style="{ height: `${initHeight}px` }">
     <div class="bg">
       <div class="wel" v-if="status">欢迎回来!</div>
       <div class="wel-btn ripple" v-if="status" @click="changeStatus">注册</div>
@@ -53,6 +53,7 @@
           password: ''
         },
         status: true,
+        initHeight: 300,
         rules: {
           name: [
             { validator: required, trigger: 'blur' }
@@ -61,6 +62,13 @@
             { validator: required, trigger: 'blur' }
           ]
         }
+      }
+    },
+    created() {
+      this.initHeight = window.innerHeight - 40
+      let _this = this
+      window.onresize = function () {
+        _this.initHeight = window.innerHeight - 40
       }
     },
     methods: {
@@ -119,7 +127,6 @@
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  height: 100%;
   width: 100%;
   .bg {
     min-width: 300px;

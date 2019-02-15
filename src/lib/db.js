@@ -1,8 +1,8 @@
-export function insert(db, event, query) {
+export function dbInsert(db, event, query) {
   db.insert(query, (err, newDoc) => event.returnValue = { err, newDoc })
 }
 
-export function find(db, event, query, options) {
+export function dbFind(db, event, query, options) {
   if (options === {} || options === undefined || options === null) {
     db.find(query, (err, docs) => event.returnValue = { err, docs })
   } else {
@@ -14,7 +14,7 @@ export function find(db, event, query, options) {
   }
 }
 
-export function findOne(db, event, query) {
+export function dbFindOne(db, event, query) {
   db.findOne(query, (err, docs) => event.returnValue = { err, docs })
 }
 
@@ -33,14 +33,14 @@ export function findOne(db, event, query) {
  *              另一种情况是带有修饰符，对第一种情况会直接将该文档插入，
  *              对第二种情况会将通过修饰符更改后的文档插入；
  */
-export function update(db, event, { query, update, options }) {
+export function dbUpdate(db, event, query, update, options) {
   db.update(query, update, options, (err, numReplaced) => event.returnValue = { err, numReplaced })
 }
 
-export function remove(db, event, { query, options }) {
+export function dbRemove(db, event, query, options) {
   db.remove(query, options, (err, numRemoved) => event.returnValue = { err, numRemoved })
 }
 
-export function count(db, event, query) {
+export function dbCount(db, event, query) {
   db.count(query, (err,  count) => event.returnValue = { err, count })
 }

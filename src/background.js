@@ -6,7 +6,7 @@ import {
   installVueDevtools
 } from 'vue-cli-plugin-electron-builder/lib'
 import DataStore from 'nedb'
-import { insert, find, findOne, update, remove, count } from "./lib/db"
+import { dbInsert, dbFind, dbFindOne, dbUpdate, dbRemove, dbCount } from "./lib/db"
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 let win, db
@@ -34,12 +34,12 @@ function createWindow () {
     if (err) {
       win = null
     } else {
-      ipcMain.on('insert', (event, query) => insert(db, event, query))
-      ipcMain.on('find', (event, query, options) => find(db, event, query, options))
-      ipcMain.on('findOne', (event, query) => findOne(db, event, query))
-      ipcMain.on('update', (event, query) => update(db, event, query))
-      ipcMain.on('remove', (event, query) => remove(db, event, query))
-      ipcMain.on('count', (event, query) => count(db, event, query))
+      ipcMain.on('insert', (event, query) => dbInsert(db, event, query))
+      ipcMain.on('find', (event, query, options) => dbFind(db, event, query, options))
+      ipcMain.on('findOne', (event, query) => dbFindOne(db, event, query))
+      ipcMain.on('update', (event, query, update, options) => dbUpdate(db, event, query, update, options))
+      ipcMain.on('remove', (event, query, options) => dbRemove(db, event, query, options))
+      ipcMain.on('count', (event, query) => dbCount(db, event, query))
     }
   })
 
