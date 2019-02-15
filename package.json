@@ -2,7 +2,12 @@
   "name": "secret",
   "version": "0.1.0",
   "private": true,
-  "author": "yimou6",
+  "description": "一个本地密码保管工具",
+  "author": {
+    "name": "yimou6",
+    "email": "binjieyi@gmail.com"
+  },
+  "repository": "https://github.com/yimou6/secret",
   "main": "background.js",
   "scripts": {
     "build": "vue-cli-service electron:build",

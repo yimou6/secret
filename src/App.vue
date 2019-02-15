@@ -1,20 +1,91 @@
 <template>
   <div id="app">
-    <router-view/>
+    <div class="app-drag">
+      <div class="app-drag-logo">
+        <img src="./assets/logo.png" alt="">
+        <span>Secret App</span>
+      </div>
+      <div class="app-drag-nav">
+        <img src="./assets/window_min.png" @click="windowMin" alt="min">
+        <img src="./assets/window_max.png" @click="windowMax" alt="max">
+        <img src="./assets/window_close.png" @click="windowClose" alt="close">
+      </div>
+    </div>
+    <div style="width: 100%; margin-top: 40px;-webkit-app-region: no-drag;">
+      <router-view/>
+    </div>
   </div>
 </template>
 
 <script>
+import { ipcRenderer } from 'electron'
 export default {
-  name: "app"
+  name: "app",
+  methods: {
+    // 最小化
+    windowMin() {
+      ipcRenderer.send('min')
+    },
+    // 最大化
+    windowMax() {
+      ipcRenderer.send('max')
+    },
+    // 关闭
+    windowClose() {
+      ipcRenderer.send('close')
+    }
+  }
 };
 </script>
 
-<style>
+<style lang="less">
 html, body, #app {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  box-shadow: rgba(0, 0, 0, 0.3);
+}
+.app-drag {
+  width: 100%;
+  position: absolute;
+  -webkit-app-region: drag;
+  height: 40px;
+  background: linear-gradient(80deg, #29DDCC, #8E697B);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  &-logo {
+    cursor: pointer;
+    width: 110px;
+    height: 35px;
+    margin-left: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    overflow: hidden;
+    img {
+      height: 100%;
+    }
+    span {
+      padding-left: 8px;
+      color: #f9f9f9;
+      font-size: 13px;
+      font-weight: lighter;
+      font-family: "Microsoft YaHei UI";
+    }
+  }
+  &-nav {
+    width: calc(100% - 120px);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    img {
+      width: 35px;
+      height: 35px;
+      cursor: pointer;
+      -webkit-app-region: no-drag;
+    }
+  }
 }
 .spin-icon-load {
   animation: ani-spin 1s linear infinite;
@@ -30,14 +101,12 @@ html, body, #app {
     transform: rotate(360deg);
   }
 }
-
 .ripple, .ripple-go {
   position: relative;
 }
 .ripple:focus, .ripple-go:focus{
   outline: none;
 }
-
 .ripple:after {
   content: "";
   display: block;
@@ -70,7 +139,6 @@ html, body, #app {
   border-radius: 22px;
   transition: all .3s;
 }
-
 .ripple:active:after, .ripple-go:active:after {
   opacity: .3;
   top: 0;
