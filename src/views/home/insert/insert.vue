@@ -85,7 +85,7 @@
     },
     created() {
       let { data } = this.$route.query
-      if (data.hasOwnProperty('id')) {
+      if (data && data.hasOwnProperty('id')) {
         this.form.icon = data.icon
         this.form.name = data.name
         this.form.username = data.username
@@ -116,12 +116,11 @@
               'time': new Date().getTime()
             }
             let res
-            if (this.$route.query.data.hasOwnProperty('id')) {
-              res = ipcRenderer.sendSync('update', { _id: this.$route.query.data.id }, { $set: query }, { multi: true })
+            if (this.$route.query.data) {
+              res = ipcRenderer.sendSync('update', { _id: this.$route.query.data.id }, { $set: query }, { multi: false })
             } else {
               res = ipcRenderer.sendSync('insert', query)
             }
-
             if (!res.err) {
               this.spinShow = false
               this.$Message.success('操作成功!')
