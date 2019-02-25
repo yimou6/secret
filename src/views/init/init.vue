@@ -34,7 +34,7 @@
 
 <script>
   import electron from 'electron'
-  import { encrypt, decrypt, writeConfig } from "../../lib/lib";
+  import { encrypt } from "../../lib/lib";
   import { DBCONFIG } from "../../lib/config";
 
   export default {
@@ -81,30 +81,29 @@
           if (valid) {
             if (this.status) {
               // 登录
-              let res = electron.ipcRenderer.sendSync('findOne', { conc: DBCONFIG.user, data: encrypt(JSON.stringify(this.form)) })
+              let res = electron.ipcRenderer.sendSync('findOne', { type: DBCONFIG.user, data: encrypt(JSON.stringify(this.form)) })
               if (!res.err) {
                 if (res.docs) {
-                  writeConfig(JSON.parse(decrypt(res.docs.data))).then(result => {
-                    if (result['success']) {
-                      this.$router.push({ name: 'home', query: { user: JSON.parse(decrypt(res.docs.data)) } })
-                    } else {
-                      this.$Message.error('配置文件写入失败!')
-                    }
-                  })
+                  let update = electron.ipcRenderer.sendSync('update', { _id: res.docs._id }, { $set: { status: "1" }}, {})
+                  if (!update.err) {
+                    this.$Message.success('登陆成功!')
+                    this.$router.push({ name: 'home' })
+                  }
                 } else {
                   this.$Message.error('登录失败！用户名或密码错误!')
                 }
               }
             } else {
               // 注册
-              let user = electron.ipcRenderer.sendSync('findOne', { conc: DBCONFIG.user })
+              let user = electron.ipcRenderer.sendSync('findOne', { type: DBCONFIG.user })
               if (!user.err) {
                 if (user.docs !== null) {
                   this.$Message.error('注册失败！本地只支持一个用户!')
                 } else {
                   let res = electron.ipcRenderer.sendSync('insert', {
-                    conc: DBCONFIG.user,
-                    data: encrypt(JSON.stringify(this.form))
+                    type: DBCONFIG.user,
+                    data: encrypt(JSON.stringify(this.form)),
+                    status: "0"
                   })
                   // console.log(res)
                   if (!res.err) {

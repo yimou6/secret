@@ -5,10 +5,12 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-
+    wh: {}
   },
   mutations: {
-
+    setWH: (state, value) => {
+      state.wh = value
+    }
   },
   actions: {
 
