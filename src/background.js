@@ -15,6 +15,7 @@ protocol.registerStandardSchemes(['app'], { secure: true })
 function createWindow () {
   win = new BrowserWindow({
     width: 800,
+    minWidth: 600,
     height: 600,
     frame: false,
     titleBarStyle: 'hidden',
