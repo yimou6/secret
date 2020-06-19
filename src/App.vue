@@ -1,48 +1,47 @@
 <template>
-  <div id="app">
-    <title-bar></title-bar>
-    <div class="app-body">
-      <router-view/>
-    </div>
-  </div>
+  <router-view/>
 </template>
 
-<script>
-import TitleBar from './components/title-bar/title-bar'
-export default {
-  name: "app",
-  components: { TitleBar },
-  created() {
-    let _this = this
-    let wh = { h: window.innerHeight, w: window.innerWidth }
-    this.$store.commit('setWH', wh)
-    window.onresize = function () {
-      _this.$store.commit('setWH', { h: window.innerHeight, w: window.innerWidth })
+<style lang="scss">
+  body, html {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #e5e8ed;
+  }
+  ul {
+    list-style: none;
+  }
+  .button {
+    outline: none;
+    display: inline-block;
+    white-space: nowrap;
+    cursor: pointer;
+    text-align: center;
+    box-sizing: border-box;
+    transition: 0.5s;
+  }
+  .primary-button {
+    background-color: #7987A1;
+    color: #ffffff;
+    border-radius: 2px;
+    border: 1px solid #7987A1;
+    font-size: 13px;
+    padding: 3px 12px;
+    &:hover {
+      background-color: #546586;
+      border-color: #546586;
     }
   }
-};
-</script>
-
-<style lang="less">
-// loading动画
-.spin-icon-load {
-  animation: ani-spin 1s linear infinite;
-}
-@keyframes ani-spin {
-  from {
-    transform: rotate(0deg);
+  button + button {
+    margin-left: 4px;
   }
-  50% {
-    transform: rotate(180deg);
+  .default-button {
+    background-color: transparent;
+    border: none;
+    font-size: 12px;
+    padding: 1px;
+    border-radius: 50%;
   }
-  to {
-    transform: rotate(360deg);
-  }
-}
-.app-body {
-  height: calc(100% - 40px);
-  width: 100%;
-  margin-top: 40px;
-  -webkit-app-region: no-drag;
-}
 </style>
