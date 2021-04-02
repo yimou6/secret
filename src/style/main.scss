@@ -1,0 +1,47 @@
+$default-color: #003f5c;
+$light-color: #58508d;
+$primary-color: #bc5090;
+$warning-color: #ffa600;
+$danger-color: #ff6361;
+
+.aside {
+  background-color: $default-color;
+}
+
+.input {
+  background-color: #ffffff;
+  background-image: none;
+  color: #666666;
+  display: inline-block;
+  outline: none;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #dcdfe6;
+}
+
+.button {
+  display: inline-block;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid #dcdfe6;
+  text-align: center;
+  box-sizing: border-box;
+  outline: none;
+  margin: 0;
+  transition: .5s;
+  font-weight: 500;
+  border-radius: 4px;
+  padding: 4px 12px;
+  background-color: $light-color;
+  font-size: 14px;
+  color: #ffffff;
+  height: 34px;
+  width: 88px;
+}
+.warning-button {
+  background-color: $warning-color;
+}
+.danger-button {
+  background-color: $danger-color;
+}
