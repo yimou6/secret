@@ -1,25 +1,25 @@
 <template>
   <div class="container">
     <div class="search-container">
-      <input v-model="searchValue" placeholder="搜索..." class="input search-input">
+      <input v-model="searchValue" placeholder="搜索..." class="input search-input" @keyup.enter="getSecretList">
       <button class="button primary-button" @click="showAdd">添加</button>
     </div>
     <transition-group name="list-complete" tag="div" class="card-container">
-      <Card v-for="item of list" :key="item.id" :data="item"></Card>
+      <Card v-for="(item, index) of list" :key="index" :data="item"></Card>
     </transition-group>
 
     <Dialog v-model="visible" title="添加">
       <div class="form-item">
-        <label for="name">名称</label>
-        <input type="text" id="name" autocomplete="off" class="input form-input">
+        <label for="title">名称</label>
+        <input type="text" id="title" v-model="form.name" autocomplete="off" class="input form-input">
       </div>
       <div class="form-item">
         <label for="user">用户名</label>
-        <input type="text" id="user" name="user" autocomplete="off" class="input form-input">
+        <input type="text" id="user" v-model="form.user" autocomplete="off" class="input form-input">
       </div>
       <div class="form-item">
         <label for="pwd">密码</label>
-        <input type="text" id="pwd" name="pwd" class="input form-input">
+        <input type="text" id="pwd" v-model="form.pwd" class="input form-input">
       </div>
       <div class="form-item">
         <label for="desc">备注</label>
@@ -39,9 +39,10 @@
 import { ref, Ref, onMounted } from 'vue'
 import Card from '@/components/Card.vue'
 import Dialog from '@/components/Dialog.vue'
-import { PwdInfo } from '@/types'
+import { PwdInfo, IPWDForm } from '@/types'
+import { cloneDeep } from 'lodash'
 import E from 'wangeditor'
-
+const ipcRenderer = window.ipcRenderer
 export default {
   name: 'Home',
   components: { Card, Dialog },
@@ -49,6 +50,12 @@ export default {
     let list: Ref<PwdInfo[]> = ref([])
     let searchValue: Ref<string> = ref('')
     let visible: Ref<boolean> = ref(false)
+    let form: Ref<IPWDForm> = ref({
+      name: '',
+      user: '',
+      pwd: '',
+      remark: ''
+    })
 
     function showAdd() {
       visible.value = true
@@ -66,18 +73,34 @@ export default {
       // 取消全屏
       editor.config.showFullScreen = false
       editor.create()
+
+
+      ipcRenderer.on('secret-list-reply', (event, args) => {
+        list.value = args
+      })
+      getSecretList()
+
     })
 
     function save() {
+      console.log('save-secret', form.value)
+      ipcRenderer.send('save-secret', cloneDeep(form.value))
       visible.value = false
+      getSecretList()
+    }
+
+    function getSecretList() {
+      ipcRenderer.send('secret-list')
     }
 
     return {
       list,
+      form,
       save,
       searchValue,
       visible,
-      showAdd
+      showAdd,
+      getSecretList
     }
   }
 }

@@ -8,6 +8,52 @@ $danger-color: #ff6361;
   background-color: $default-color;
 }
 
+.lock {
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  &-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    input {
+      background-color: #ffffff;
+      background-image: none;
+      color: #666666;
+      display: inline-block;
+      outline: none;
+      height: 32px;
+      padding: 0 12px;
+      border: 1px solid #dcdfe6;
+      border-top-left-radius: 5px;
+      border-bottom-left-radius: 5px;
+    }
+    div {
+      background-color: #333333;
+      color: #ffffff;
+      height: 34px;
+      width: 56px;
+      font-size: 14px;
+      text-align: center;
+      line-height: 34px;
+      border-top-right-radius: 5px;
+      border-bottom-right-radius: 5px;
+      cursor: pointer;
+      transition: background-color .3s;
+      &:hover {
+        background-color: #555555;
+      }
+    }
+  }
+}
+
 .input {
   background-color: #ffffff;
   background-image: none;

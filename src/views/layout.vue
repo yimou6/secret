@@ -2,6 +2,14 @@
   <div class="layout">
     <Aside :types="types"/>
     <router-view />
+    <teleport to="body">
+      <div class="lock" v-show="isLock">
+        <div class="lock-container">
+          <input type="text" maxlength="6" v-model="lockValue" @keyup.enter="openLock">
+          <div @click="openLock">GO</div>
+        </div>
+      </div>
+    </teleport>
   </div>
 </template>
 
@@ -12,8 +20,12 @@ export default defineComponent({
   name: 'layout',
   components: { Aside },
   setup() {
+    // 分类
     let types = ref([])
-
+    // 是否锁定
+    let isLock = ref(false)
+    // 锁定密码
+    let lockValue = ref('')
     onMounted(() => {
       // 获取初始化配置
       let config: any = localStorage.getItem('config')
@@ -34,8 +46,17 @@ export default defineComponent({
       types.value = config.types
     })
 
+    function openLock() {
+      if (lockValue.value) {
+        isLock.value = false
+      }
+    }
+
     return {
-      types
+      types,
+      isLock,
+      openLock,
+      lockValue
     }
   }
 })

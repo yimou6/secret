@@ -1,9 +1,12 @@
 'use strict'
 
-import { app, protocol, BrowserWindow } from 'electron'
-import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
-import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
-import NodeRSA from 'node-rsa'
+import {app, BrowserWindow, protocol, ipcMain, IpcMainEvent} from 'electron'
+import {createProtocol} from 'vue-cli-plugin-electron-builder/lib'
+import installExtension, {VUEJS_DEVTOOLS} from 'electron-devtools-installer'
+import Nedb from 'nedb'
+import path from 'path'
+import { decryptDoc, encryptDoc } from '@/utils/encrypt'
+
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 // Scheme must be registered before the app is ready
@@ -12,7 +15,7 @@ protocol.registerSchemesAsPrivileged([
 ])
 
 async function createWindow() {
-  // Create the browser window.
+
   const win = new BrowserWindow({
     width: 800,
     height: 600,
@@ -25,9 +28,12 @@ async function createWindow() {
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
       nodeIntegration: (process.env
-          .ELECTRON_NODE_INTEGRATION as unknown) as boolean
+          .ELECTRON_NODE_INTEGRATION as unknown) as boolean,
+      preload: path.join(__dirname, 'preload.js')
     }
   })
+
+
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
@@ -39,7 +45,53 @@ async function createWindow() {
     await win.loadURL('app://./index.html')
   }
 }
+app.on('ready', async () => {
+  if (isDevelopment && !process.env.IS_TEST) {
+    // Install Vue Devtools
+    try {
+      await installExtension(VUEJS_DEVTOOLS)
+    } catch (e) {
+      console.error('Vue Devtools failed to install:', e.toString())
+    }
+  }
+  // 创建窗口
+  await createWindow()
+  // 加载数据库
+  const db = loadDatabase()
+  // 保存
+  ipcMain.on('save-secret', (event: IpcMainEvent, args) => {
+    db.insert({
+      con: 'p',
+      doc: encryptDoc(JSON.stringify(args))
+    }, (err, document) => {
+      if (err) {
+        console.log('保存失败', err)
+      } else {
+        console.log('保存成功')
+      }
+    })
+  })
 
+  // 查询
+  ipcMain.on('secret-list', ((event, args) => {
+    db.find({
+      con: 'p'
+    }, (err: any, document: any[]) => {
+      if (err) {
+        console.log(err)
+      } else {
+        if (document.length > 0) {
+          const list = document.map(doc => {
+            return JSON.parse(decryptDoc(doc.doc))
+          })
+          event.reply('secret-list-reply', list)
+        }
+      }
+    })
+  }))
+
+
+})
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
   // On macOS it is common for applications and their menu bar
@@ -49,49 +101,16 @@ app.on('window-all-closed', () => {
   }
 })
 
-app.on('activate', () => {
+app.on('activate', async () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  if (BrowserWindow.getAllWindows().length === 0) createWindow()
+  if (BrowserWindow.getAllWindows().length === 0) await createWindow()
 })
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', async (data: NodeRSA.Data, encoding?: "buffer") => {
-  if (isDevelopment && !process.env.IS_TEST) {
-    // Install Vue Devtools
-    try {
-      await installExtension(VUEJS_DEVTOOLS)
-    } catch (e) {
-      console.error('Vue Devtools failed to install:', e.toString())
-    }
-  }
-  await createWindow()
 
-  function generateKeyPair() {
-    let key = new NodeRSA({ b: 128 })
-    key.setOptions({ encryptionScheme: 'pkcs1' }) // 指定加密格式
-    key.sign('aaa')
-    let publicPem = key.exportKey('pkcs1-public-pem')
-    let privatePem = key.exportKey('pkcs1-private-pem')
-    console.log('公钥\n', publicPem)
-    console.log('私钥\n', privatePem)
-
-    let encryData = key.encryptPrivate(Buffer.from('test code'), 'base64', 'utf8')
-    console.log('私钥加密\n', encryData)
-
-    let decryptData = key.decryptPublic(encryData, 'utf8')
-    console.log('公钥解密\n', decryptData)
-    //
-    // let key2 = new NodeRSA({ b: 128 })
-    // key2.importKey(publicPem, 'public')
-    // let decrypted = key2.decryptPublic(encryData, 'utf8')
-    // console.log('公钥解密\n', decrypted)
-
-  }
-  // generateKeyPair()
-})
 
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {
@@ -107,3 +126,12 @@ if (isDevelopment) {
     })
   }
 }
+
+function loadDatabase() {
+  return new Nedb({
+    filename: path.join(app.getPath('userData'), 'data.ggg'),
+    autoload: true
+  })
+}
+
+

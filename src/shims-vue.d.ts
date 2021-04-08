@@ -1,3 +1,4 @@
+import {IpcRenderer} from "electron";
 /* eslint-disable */
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'
@@ -5,3 +6,12 @@ declare module '*.vue' {
   export default component
 }
 
+// declare interface Window {
+//   ipcRenderer: IpcRenderer
+// }
+
+declare global {
+  interface Window {
+    ipcRenderer: IpcRenderer
+  }
+}

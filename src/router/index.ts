@@ -3,19 +3,19 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    component: () => import('../views/layout.vue'),
+    component: () => import('@/views/layout.vue'),
     children: [
       {
         path: '',
         name: 'home',
-        component: () => import('../views/Home.vue')
+        component: () => import('@/views/Home.vue')
       }
     ]
   },
   {
     path: '/config',
     name: 'config',
-    component: () => import('../views/Config.vue')
+    component: () => import('@/views/Config.vue')
   }
 ]
 

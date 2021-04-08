@@ -1,3 +1,4 @@
+
 export interface PwdInfo {
      id: string
      name: string
@@ -6,6 +7,12 @@ export interface PwdInfo {
      create: string,
      update?: string,
      history?: [PwdHistory]
+}
+export interface IPWDForm {
+     name: string,
+     user: string,
+     pwd: string,
+     remark: string
 }
 
 interface PwdHistory {
@@ -17,3 +24,4 @@ interface PwdHistory {
      oldPwd: string,
      newPwd: string
 }
+
