@@ -1,106 +1,68 @@
 <template>
   <div class="container">
     <div class="search-container">
-      <input v-model="searchValue" placeholder="搜索..." class="input search-input" @keyup.enter="getSecretList">
-      <button class="button primary-button" @click="showAdd">添加</button>
+      <input v-model="searchValue" placeholder="搜索..." class="input search-input">
+      <button class="button primary-button" @click="add">添加</button>
     </div>
-    <transition-group name="list-complete" tag="div" class="card-container">
-      <Card v-for="(item, index) of list" :key="index" :data="item"></Card>
-    </transition-group>
 
-    <Dialog v-model="visible" title="添加">
-      <div class="form-item">
-        <label for="title">名称</label>
-        <input type="text" id="title" v-model="form.name" autocomplete="off" class="input form-input">
-      </div>
-      <div class="form-item">
-        <label for="user">用户名</label>
-        <input type="text" id="user" v-model="form.user" autocomplete="off" class="input form-input">
-      </div>
-      <div class="form-item">
-        <label for="pwd">密码</label>
-        <input type="text" id="pwd" v-model="form.pwd" class="input form-input">
-      </div>
-      <div class="form-item">
-        <label for="desc">备注</label>
-        <div class="form-desc">
-          <div id="desc"></div>
-        </div>
-      </div>
-      <div class="dialog-footer">
-        <button class="button warning-button" @click="visible = false">取消</button>
-        <button class="button danger-button" @click="save">保存</button>
-      </div>
-    </Dialog>
+    <div class="container-title">
+      <span>TYPE 1</span>
+    </div>
+
+    <Secret :data="list"></Secret>
+
+    <EditSecret ref="editSecret"></EditSecret>
   </div>
 </template>
 
 <script lang="ts">
-import { ref, Ref, onMounted } from 'vue'
-import Card from '@/components/Card.vue'
-import Dialog from '@/components/Dialog.vue'
-import { PwdInfo, IPWDForm } from '@/types'
-import { cloneDeep } from 'lodash'
-import E from 'wangeditor'
-const ipcRenderer = window.ipcRenderer
+import { ref, Ref } from 'vue'
+import Secret from '@/components/Secret.vue'
+import EditSecret from '@/components/EditSecret.vue'
+import { CEditSecret } from "@/components/editSecret";
+
 export default {
   name: 'Home',
-  components: { Card, Dialog },
+  components: { Secret, EditSecret },
   setup() {
-    let list: Ref<PwdInfo[]> = ref([])
+    let list = ref([
+      {
+        name: 'QQ',
+        user: '670746668',
+        update: '2020/04/15'
+      },
+      {
+        name: 'QQ',
+        user: '670746668',
+        update: '2020/04/15'
+      },
+      {
+        name: 'QQ',
+        user: '670746668',
+        update: '2020/04/15'
+      },
+      {
+        name: 'QQ',
+        user: '670746668',
+        update: '2020/04/15'
+      }
+    ])
     let searchValue: Ref<string> = ref('')
     let visible: Ref<boolean> = ref(false)
-    let form: Ref<IPWDForm> = ref({
-      name: '',
-      user: '',
-      pwd: '',
-      remark: ''
-    })
 
-    function showAdd() {
-      visible.value = true
-    }
-
-    onMounted(() => {
-      // 初始化富文本编辑器
-      const editor = new E('#desc')
-      editor.config.menus = [
-          'bold',
-          'emoticon',
-          'table'
-      ]
-      editor.config.height = 160
-      // 取消全屏
-      editor.config.showFullScreen = false
-      editor.create()
-
-
-      ipcRenderer.on('secret-list-reply', (event, args) => {
-        list.value = args
-      })
-      getSecretList()
-
-    })
-
-    function save() {
-      console.log('save-secret', form.value)
-      ipcRenderer.send('save-secret', cloneDeep(form.value))
-      visible.value = false
-      getSecretList()
-    }
-
-    function getSecretList() {
-      ipcRenderer.send('secret-list')
+    const editSecret = ref<CEditSecret | null>(null)
+    function add() {
+      if (editSecret.value) {
+        editSecret.value.init()
+      }
     }
 
     return {
       list,
-      form,
-      save,
-      searchValue,
       visible,
-      showAdd,
-      getSecretList
+      searchValue,
+      editSecret,
+      add
     }
   }
 }
@@ -108,11 +70,12 @@ export default {
 
 <style lang="scss">
 .search-container {
-  height: 60px;
-  line-height: 60px;
+  height: 50px;
+  line-height: 48px;
+  border-bottom: 1px solid #EAEBF1;
   .search-input {
     border-radius: 4px;
-    width: 220px;
+    width: 300px;
     margin-left: 10px;
   }
   .primary-button {
@@ -123,49 +86,10 @@ export default {
     font-size: 14px;
   }
 }
-.card-container {
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: row;
-  padding: 12px;
-}
-.list-complete-enter-from,
-.list-complete-leave-to {
-  opacity: 0;
-  transform: translateY(30px);
-}
-.list-complete-leave-active {
-  position: absolute;
-}
-.form-item {
-  margin-top: 8px;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  label {
-    font-size: 14px;
-    color: #333333;
-    font-weight: 500;
-    width: 60px;
-    text-align: right;
-    display: inline-block;
-    padding-right: 8px;
-  }
-  .form-input {
-    display: inline-block;
-    position: relative;
-    width: 405px;
-    border-color: #dcdfe6;
-  }
-  .form-desc {
-    width: 435px;
-  }
-}
-.dialog-footer {
-  border-top: 1px solid #f3f3f3;
-  margin-top: 10px;
-  height: 36px;
-  line-height: 36px;
-  text-align: right;
+.container-title {
+  color: #3a5062;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 15px 20px;
 }
 </style>

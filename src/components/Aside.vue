@@ -1,38 +1,34 @@
 <template>
   <div class="aside">
-    <div class="aside-logo"></div>
+
+    <div class="aside-logo">SECRET</div>
+
     <ul class="aside-container">
       <li class="aside-item"
           v-for="(item, index) of types"
           :key="index">
-        {{ item.name }}
+        <span>{{ item.name }}</span>
       </li>
-      <li class="aside-item" @click="showCreateMenu">添加分类</li>
+      <li class="aside-item aside-active">
+        <span>添加分类</span>
+      </li>
     </ul>
-
-    <Dialog v-model="visible" title="添加分类">
-      <div class="form-item">
-        <label for="name">名称</label>
-        <input type="text" id="name" autocomplete="off" class="input form-input">
-      </div>
-      <div class="dialog-footer">
-        <button class="button warning-button" @click="visible = false">取消</button>
-        <button class="button danger-button" @click="save">保存</button>
-      </div>
-    </Dialog>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
-import Dialog from '@/components/Dialog.vue'
 export default defineComponent({
   name: 'Aside',
-  components: { Dialog },
   props: {
     types: {
       type: Array,
-      default: () => ([])
+      default: () => ([
+        { name: 'Type1' },
+        { name: 'Type2' },
+        { name: 'Type3' },
+        { name: 'Type4' }
+      ])
     }
   },
   setup() {
@@ -62,45 +58,40 @@ export default defineComponent({
   width: 200px;
 
   .aside-logo {
-    height: 100px;
+    height: 50px;
+    line-height: 48px;
+    text-align: center;
+    color: #7E88C8;
+    font-weight: 800;
+    font-size: 20px;
+    border-bottom: 1px solid #EAEBF1;
   }
+
   .aside-container {
     list-style: none;
     padding: 0;
     margin: 0;
     position: relative;
-    .active {
-      width: 150px;
-      height: 30px;
-      background-color: #58508d;
-      position: absolute;
-      top: 5px;
-      left: 25px;
-      border-radius: 15px;
-      transition: top 0.3s ease;
+    .aside-active span {
+      font-weight: 600;
+      color: #7784D7;
+      background-color: #E4E7F5;
     }
     li {
-      color: #ffffff;
+      color: #878D97;
       font-weight: 400;
       font-size: 13px;
       text-align: center;
-      height: 40px;
-      line-height: 40px;
+      height: 36px;
+      line-height: 36px;
       cursor: pointer;
       z-index: 1;
       position: relative;
-      &:after {
-        content: "";
-        height: 40px;
-        width: 0;
-        background-color: rgba(0, 0, 0, 0.3);
-        position: absolute;
-        top: 0;
-        left: 0;
-        transition: width 0.3s;
-      }
-      &:hover::after {
-        width: 200px;
+      margin-top: 10px;
+      span {
+        display: inline-block;
+        width: 160px;
+        border-radius: 4px;
       }
     }
   }

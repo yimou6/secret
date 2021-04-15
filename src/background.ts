@@ -1,15 +1,14 @@
 'use strict'
 
-import {app, BrowserWindow, protocol, ipcMain, IpcMainEvent} from 'electron'
+import {app, BrowserWindow, protocol} from 'electron'
 import {createProtocol} from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, {VUEJS_DEVTOOLS} from 'electron-devtools-installer'
 import Nedb from 'nedb'
 import path from 'path'
-import { decryptDoc, encryptDoc } from '@/utils/encrypt'
-
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 // Scheme must be registered before the app is ready
+// 方案必须在应用程序准备就绪之前注册
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
 ])
@@ -57,38 +56,7 @@ app.on('ready', async () => {
   // 创建窗口
   await createWindow()
   // 加载数据库
-  const db = loadDatabase()
-  // 保存
-  ipcMain.on('save-secret', (event: IpcMainEvent, args) => {
-    db.insert({
-      con: 'p',
-      doc: encryptDoc(JSON.stringify(args))
-    }, (err, document) => {
-      if (err) {
-        console.log('保存失败', err)
-      } else {
-        console.log('保存成功')
-      }
-    })
-  })
-
-  // 查询
-  ipcMain.on('secret-list', ((event, args) => {
-    db.find({
-      con: 'p'
-    }, (err: any, document: any[]) => {
-      if (err) {
-        console.log(err)
-      } else {
-        if (document.length > 0) {
-          const list = document.map(doc => {
-            return JSON.parse(decryptDoc(doc.doc))
-          })
-          event.reply('secret-list-reply', list)
-        }
-      }
-    })
-  }))
+  // const db = loadDatabase()
 
 
 })

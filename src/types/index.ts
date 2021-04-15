@@ -1,10 +1,10 @@
 
 export interface PwdInfo {
-     id: string
+     id?: string
      name: string
      user: string
-     pwd: string,
-     create: string,
+     pwd?: string,
+     create?: string,
      update?: string,
      history?: [PwdHistory]
 }
