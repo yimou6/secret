@@ -6,6 +6,8 @@
           <div class="edit-secret-title">添加</div>
           <div class="edit-secret-container">
             <div class="edit-secret-info">
+              <label for="type">类别</label>
+              <input id="type" autocomplete="off" v-model="form.type"/>
               <label for="name">名称</label>
               <input id="name" autocomplete="off" v-model="form.name"/>
               <label for="pwd">账号</label>
@@ -18,7 +20,7 @@
               <textarea id="remark" autocomplete="off" rows="10" v-model="form.remark"/>
               <div class="edit-secret-button">
                 <button class="default-button" @click="close">取消</button>
-                <button class="primary-button">保存</button>
+                <button class="primary-button" @click="submit">保存</button>
               </div>
             </div>
           </div>
@@ -29,8 +31,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive } from "vue";
+import { defineComponent, ref, reactive } from 'vue'
+import { cloneDeep } from 'lodash'
+const ipcRenderer = window.ipcRenderer
 interface ISecret {
+  type: string
   name: string
   user: string
   pwd: string
@@ -40,14 +45,18 @@ export default defineComponent({
   setup() {
     const show = ref<boolean>(false)
     const animationClass = ref<string>('show-edit-secret')
-    const form = reactive<ISecret>({
+    let form = reactive<ISecret>({
+      type: '',
       name: '',
       user: '',
       pwd: '',
       remark: ''
     })
 
-    function init () {
+    function init (secret?: ISecret) {
+      if (secret) {
+        form = secret
+      }
       animationClass.value = 'show-edit-secret'
       show.value = true
     }
@@ -56,12 +65,18 @@ export default defineComponent({
       animationClass.value = 'hidden-edit-secret'
       show.value = false
     }
+
+    function submit() {
+      console.log('-- submit --')
+      ipcRenderer.send('submit-secret', cloneDeep(form))
+    }
     return {
       form,
       animationClass,
       close,
       show,
-      init
+      init,
+      submit
     }
   }
 })

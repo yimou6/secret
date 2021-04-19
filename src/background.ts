@@ -1,7 +1,7 @@
 'use strict'
 
-import {app, BrowserWindow, protocol} from 'electron'
-import {createProtocol} from 'vue-cli-plugin-electron-builder/lib'
+import {app, BrowserWindow, ipcMain, protocol} from 'electron'
+import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, {VUEJS_DEVTOOLS} from 'electron-devtools-installer'
 import Nedb from 'nedb'
 import path from 'path'
@@ -26,8 +26,7 @@ async function createWindow() {
 
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
-      nodeIntegration: (process.env
-          .ELECTRON_NODE_INTEGRATION as unknown) as boolean,
+      nodeIntegration: (process.env.ELECTRON_NODE_INTEGRATION as unknown) as boolean,
       preload: path.join(__dirname, 'preload.js')
     }
   })
@@ -56,9 +55,17 @@ app.on('ready', async () => {
   // 创建窗口
   await createWindow()
   // 加载数据库
-  // const db = loadDatabase()
+  const db = loadDatabase()
 
-
+  ipcMain.on('submit-secret', (event, args) => {
+    db.insert(args, (err, document) => {
+      if (err) {
+        event.reply('submit-secret-reply', { code: 0, msg: '保存失败!', err })
+      } else {
+        event.reply('submit-secret-reply', { code: 1, msg: '保存成功!' })
+      }
+    })
+  })
 })
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
