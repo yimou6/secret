@@ -6,16 +6,16 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/layout.vue'),
     children: [
       {
-        path: '',
+        path: ':value',
         name: 'home',
         component: () => import('@/views/Home.vue')
+      },
+      {
+        path: '/config',
+        name: 'config',
+        component: () => import('@/views/Config.vue')
       }
     ]
-  },
-  {
-    path: '/config',
-    name: 'config',
-    component: () => import('@/views/Config.vue')
   },
   {
     path: '/test',

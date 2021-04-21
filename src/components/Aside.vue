@@ -6,47 +6,57 @@
     <ul class="aside-container">
       <li class="aside-item"
           v-for="(item, index) of types"
-          :key="index">
+          :key="index"
+          :class="{'aside-active': item.value === activeType.value}"
+          @click="handleClick(item)">
         <span>{{ item.name }}</span>
       </li>
-      <li class="aside-item aside-active">
-        <span>添加分类</span>
+      <li class="aside-item" :class="{'aside-active': route.name === 'config'}" @click="setting">
+        <span>设置</span>
       </li>
     </ul>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, onMounted, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 export default defineComponent({
   name: 'Aside',
   props: {
     types: {
       type: Array,
-      default: () => ([
-        { name: 'Type1' },
-        { name: 'Type2' },
-        { name: 'Type3' },
-        { name: 'Type4' }
-      ])
+      default: () => ([])
     }
   },
   setup() {
-    const menuList = ref([
-      { name: 'Type1' },
-      { name: 'Type2' },
-      { name: 'Type3' },
-      { name: 'Type4' }
-    ])
+    const route = useRoute()
+    const router = useRouter()
     const visible = ref(false)
+    const activeType = computed(() => {
+      return route.params
+    })
     function showCreateMenu() {
       visible.value = true
     }
-
+    function handleClick(type: { name: string, value: string }) {
+      router.push({ name: 'home', params: { value: type.value } })
+    }
+    onMounted(() => {
+      if (!route.params.value && route.name !== 'config') {
+        router.push({ name: 'home', params: { value: '1' } })
+      }
+    })
+    function setting() {
+      router.push({ name: 'config' })
+    }
     return {
+      route,
       visible,
-      menuList,
-      showCreateMenu
+      activeType,
+      handleClick,
+      showCreateMenu,
+      setting
     }
   }
 })
@@ -92,6 +102,12 @@ export default defineComponent({
         display: inline-block;
         width: 160px;
         border-radius: 4px;
+        transition: all .3s;
+      }
+      &:hover span {
+        font-weight: 600;
+        color: #7784D7;
+        background-color: #E4E7F5;
       }
     }
   }

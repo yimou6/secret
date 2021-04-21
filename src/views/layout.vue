@@ -1,19 +1,23 @@
 <template>
   <div class="layout">
-    <Aside/>
+    <Aside :types="types"/>
     <router-view />
   </div>
 </template>
 
 <script lang="ts">
 import Aside from '@/components/Aside.vue'
-import { defineComponent } from 'vue'
+import { defineComponent, reactive } from 'vue'
 export default defineComponent({
   name: 'layout',
   components: { Aside },
   setup() {
-
-    return {}
+    let types = reactive([
+      { name: '默认', value: '1' }
+    ])
+    return {
+      types
+    }
   }
 })
 </script>

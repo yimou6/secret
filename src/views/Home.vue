@@ -1,8 +1,15 @@
 <template>
   <div class="container">
     <div class="search-container">
-      <input v-model="searchValue" placeholder="搜索..." class="input search-input">
-      <button class="button primary-button" @click="add">添加</button>
+      <div class="search-input">
+        <input v-model="searchValue" placeholder="搜索..." class="input">
+        <img src="@/assets/search.png" alt="search">
+      </div>
+      <div class="btn">
+        <button class="button primary-button" @click="add">
+          <img src="@/assets/add.png" alt="add">
+        </button>
+      </div>
     </div>
 
     <div class="container-title">
@@ -11,42 +18,21 @@
 
     <Secret :data="list"></Secret>
 
-    <EditSecret ref="editSecret"></EditSecret>
+    <EditSecret ref="editSecret" @refresh="getList"></EditSecret>
   </div>
 </template>
 
 <script lang="ts">
-import { ref, Ref } from 'vue'
+import {ref, Ref, onMounted, defineComponent} from 'vue'
 import Secret from '@/components/Secret.vue'
 import EditSecret from '@/components/EditSecret.vue'
 import { CEditSecret } from "@/components/editSecret";
-
-export default {
+const ipcRenderer = window.ipcRenderer
+export default defineComponent({
   name: 'Home',
   components: { Secret, EditSecret },
   setup() {
-    let list = ref([
-      {
-        name: 'QQ',
-        user: '670746668',
-        update: '2020/04/15'
-      },
-      {
-        name: 'QQ',
-        user: '670746668',
-        update: '2020/04/15'
-      },
-      {
-        name: 'QQ',
-        user: '670746668',
-        update: '2020/04/15'
-      },
-      {
-        name: 'QQ',
-        user: '670746668',
-        update: '2020/04/15'
-      }
-    ])
+    let list = ref([])
     let searchValue: Ref<string> = ref('')
     let visible: Ref<boolean> = ref(false)
 
@@ -56,16 +42,31 @@ export default {
         editSecret.value.init()
       }
     }
+    function getList() {
+      console.log('-- get list --')
+      ipcRenderer.send('secret-list', { type: '1' })
+    }
+
+    onMounted(() => {
+      getList()
+      ipcRenderer.on('submit-list-reply', (event, args) => {
+        if (args.code === 1) {
+          list.value = args.data
+          console.log(list.value)
+        }
+      })
+    })
 
     return {
       list,
       visible,
       searchValue,
       editSecret,
-      add
+      add,
+      getList
     }
   }
-}
+})
 </script>
 
 <style lang="scss">
@@ -73,17 +74,43 @@ export default {
   height: 50px;
   line-height: 48px;
   border-bottom: 1px solid #EAEBF1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   .search-input {
-    border-radius: 4px;
     width: 300px;
-    margin-left: 10px;
+    margin-left: 20px;
+    position: relative;
+    input {
+      border-radius: 4px;
+      width: calc(100% - 24px);
+    }
+    img {
+      width: 16px;
+      height: 16px;
+      position: absolute;
+      right: 6px;
+      top: 18px;
+    }
+  }
+  .btn {
+    margin-right: 20px;
+    padding-top: 10px;
   }
   .primary-button {
     height: 34px;
-    width: 88px;
+    width: 40px;
     margin-left: 10px;
     color: #ffffff;
     font-size: 14px;
+    padding: 0;
+    line-height: 0;
+    img {
+      width: 20px;
+    }
+    &:hover {
+      background-color: rgba(88, 80, 141, .9);
+    }
   }
 }
 .container-title {

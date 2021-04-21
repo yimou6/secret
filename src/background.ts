@@ -58,11 +58,35 @@ app.on('ready', async () => {
   const db = loadDatabase()
 
   ipcMain.on('submit-secret', (event, args) => {
-    db.insert(args, (err, document) => {
+    db.insert(Object.assign(args, {
+      secret: true,
+      update: new Date()
+    }), (err, document) => {
       if (err) {
         event.reply('submit-secret-reply', { code: 0, msg: '保存失败!', err })
       } else {
         event.reply('submit-secret-reply', { code: 1, msg: '保存成功!' })
+      }
+    })
+  })
+
+  ipcMain.on('secret-list', (event, args) => {
+    const { type } = args
+    db.find({ type, secret: true }, (err: Error | null, doc: any[]) => {
+      if (err) {
+        event.reply('submit-list-reply', { code: 0, msg: '查询失败!', err })
+      } else {
+        event.reply('submit-list-reply', { code: 1, msg: '查询成功!', data: doc })
+      }
+    })
+  })
+
+  ipcMain.on('type-list', (event, args) => {
+    db.find({ secret: false }, (err: Error | null, doc: any[]) => {
+      if (err) {
+        event.reply('type-list-reply', { code: 0, msg: '查询失败!', err })
+      } else {
+        event.reply('type-list-reply', { code: 1, msg: '查询成功!', data: doc })
       }
     })
   })

@@ -15,17 +15,21 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue'
+import { defineComponent, ref, onMounted, onUnmounted } from 'vue'
 interface ISelectOption {
   label: string
   value: string
 }
 export default defineComponent({
-  name: 'Test',
+  name: 'Select',
   props: {
     list: {
       type: Array,
-      default: () => ([])
+      default: () => []
+    },
+    modelValue: {
+      type: String,
+      default: ''
     }
   },
   setup(props, ctx) {
@@ -37,19 +41,30 @@ export default defineComponent({
     }
     function handleClick(val: ISelectOption) {
       showLabel.value = val.label
+      ctx.emit('update:modelValue', val.value)
       ctx.emit('change', val.value, val)
       show.value = false
     }
-    onMounted(() => {
-      document.addEventListener('click', function (e: Event) {
-        if (select.value) {
-          // contains(other: Node | null): boolean;
-          // interface Node extends EventTarget
-          if (!select.value.contains((e.target as Node))) {
-            show.value = false
-          }
+    function handleClickOther(e: Event) {
+      if (select.value) {
+        // contains(other: Node | null): boolean;
+        // interface Node extends EventTarget
+        if (!select.value.contains((e.target as Node))) {
+          show.value = false
         }
-      })
+      }
+    }
+    onMounted(() => {
+      if (props.modelValue) {
+        const index: number = props.list.findIndex(it => (it as ISelectOption).value === props.modelValue)
+        if (index !== -1) {
+          showLabel.value = (props.list[index] as ISelectOption).label
+        }
+      }
+      document.addEventListener('click', handleClickOther)
+    })
+    onUnmounted(() => {
+      document.removeEventListener('click', handleClickOther)
     })
     return {
       show,
@@ -88,6 +103,7 @@ export default defineComponent({
     overflow: auto;
     width: 100%;
     max-height: 200px;
+    background-color: #ffffff;
   }
   ul {
     list-style: none;

@@ -7,7 +7,7 @@
           <div class="edit-secret-container">
             <div class="edit-secret-info">
               <label for="type">类别</label>
-              <input id="type" autocomplete="off" v-model="form.type"/>
+              <Select id="type" v-model="form.type" :list="typeList" style="width: 100%"></Select>
               <label for="name">名称</label>
               <input id="name" autocomplete="off" v-model="form.name"/>
               <label for="pwd">账号</label>
@@ -31,8 +31,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive } from 'vue'
+import { defineComponent, ref, reactive, onMounted } from 'vue'
 import { cloneDeep } from 'lodash'
+import Select from './Select.vue'
 const ipcRenderer = window.ipcRenderer
 interface ISecret {
   type: string
@@ -42,16 +43,21 @@ interface ISecret {
   remark: string
 }
 export default defineComponent({
-  setup() {
+  name: 'EditSecret',
+  components: { Select },
+  setup(props, ctx) {
     const show = ref<boolean>(false)
     const animationClass = ref<string>('show-edit-secret')
     let form = reactive<ISecret>({
-      type: '',
+      type: '1',
       name: '',
       user: '',
       pwd: '',
       remark: ''
     })
+    const typeList = reactive([
+      { label: '默认', value: '1' }
+    ])
 
     function init (secret?: ISecret) {
       if (secret) {
@@ -70,8 +76,24 @@ export default defineComponent({
       console.log('-- submit --')
       ipcRenderer.send('submit-secret', cloneDeep(form))
     }
+
+    onMounted(() => {
+      ipcRenderer.on('submit-secret-reply', (event, args) => {
+        if (args.code === 1) {
+          form.name = ''
+          form.remark = ''
+          form.pwd = ''
+          form.user = ''
+          form.type = '1'
+          ctx.emit('refresh')
+          show.value = false
+        }
+      })
+    })
+
     return {
       form,
+      typeList,
       animationClass,
       close,
       show,
@@ -119,16 +141,16 @@ export default defineComponent({
     }
     .edit-secret-info {
       width: 360px;
-      padding: 0 20px;
+      padding: 0 18px;
       label {
-        margin-top: 15px;
-        margin-bottom: 12px;
+        margin-top: 5px;
+        margin-bottom: 5px;
         display: block;
         font-size: 13px;
         color: #1d1d1d;
       }
       input {
-        margin-bottom: 12px;
+        margin-bottom: 5px;
         display: block;
         background-color: #ffffff;
         background-image: none;
@@ -138,7 +160,7 @@ export default defineComponent({
         padding: 0 12px;
         border: 1px solid #dcdfe6;
         border-radius: 4px;
-        width: calc(100% - 20px);
+        width: calc(100% - 24px);
       }
       textarea {
         margin-top: 10px;
